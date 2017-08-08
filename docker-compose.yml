@@ -3,16 +3,18 @@ services:
   db:
     image: postgres
     environment:
-      - POSTGRES_DB="airways"
-      - POSTGRES_USER="airways"
-      - POSTGRES_PASSWORD="airways"
+      - POSTGRES_DB=airways
+      - POSTGRES_USER=airways
+      - POSTGRES_PASSWORD=airways
     ports:
       - "5432"
 
   app:
     image: jrocketfingers/airways
     ports:
-      - "8000"
+      - "8000:8000"
+    volumes:
+      - .:/home/airways/app
 
 #  nginx:
 #    image: nginx
