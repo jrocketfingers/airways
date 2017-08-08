@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB="airways"
+      - POSTGRES_USER="airways"
+      - POSTGRES_PASSWORD="airways"
+    ports:
+      - "5432"
+
+  app:
+    image: jrocketfingers/airways
+    ports:
+      - "8000"
+
+#  nginx:
+#    image: nginx
+#    volumes:
+#      - ./deployment/templates/nginx/airways.conf:/etc/nginx/conf.d/airways.conf
+#    ports:
+#      - "80"
