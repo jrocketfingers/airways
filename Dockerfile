@@ -1,9 +1,10 @@
 FROM python:3.6
 
-USER airways
+RUN pip install gunicorn
+
 WORKDIR /home/airways/app
 
 ADD ./requirements.txt .
-RUN pip install requirements.txt
+RUN pip install -r requirements.txt
 
 CMD gunicorn airways.wsgi
