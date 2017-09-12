@@ -16,9 +16,9 @@ class Model(models.Model):
     """
 
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey('core.User', related_name='+')
+    created_by = models.ForeignKey('core.User', related_name='+', null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey('core.User', related_name='+')
+    updated_by = models.ForeignKey('core.User', related_name='+', null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted_by = models.ForeignKey('core.User', null=True, blank=True,
                                    related_name='+')
@@ -36,9 +36,13 @@ class User(AbstractUser, Model):
     )
     email = models.EmailField()
     sex = models.CharField(max_length=1, choices=SEX_CHOICES)
-    date_of_birth = models.DateField(validators=[validators.over_18])
+    date_of_birth = models.DateField(validators=[validators.over_18], null=True, blank=True)
     company = models.ForeignKey('core.Company', null=True, blank=True,
                                 related_name='employees')
+
+
+class Crew(User):
+    pass
 
 
 class Company(Model):
@@ -59,10 +63,13 @@ class AircraftMake(Model):
     :field license_prefix: Specifies the license prefixes for pilots elgible to
                            fly the plane of this make.
     """
-    manufacturer = models.ForeignKey('core.Manufacturer')
+    manufacturer = models.ForeignKey('core.Manufacturer',
+                                     related_name='aircrafts')
     name = models.CharField(max_length=50)
     type = models.CharField(max_length=50)
-    seats = models.IntegerField()
+    capacity = models.IntegerField()
+    length = models.FloatField()
+    speed = models.IntegerField()
     license_prefix = models.CharField(max_length=2)
 
 
@@ -74,6 +81,24 @@ class Aircraft(Model):
     """
     make = models.ForeignKey('core.AircraftMake')
     company = models.ForeignKey('core.Company')
+
+
+class Airport(Model):
+    name = models.CharField(max_length=100)
+
+
+class Terminal(Model):
+    name = models.CharField(max_length=100)
+    airport = models.ForeignKey('core.Airport')
+
+
+class Gate(Model):
+    name = models.CharField(max_length=100)
+    terminal = models.ForeignKey('core.Terminal')
+
+
+class Radar(Model):
+    name = models.CharField(max_length=100)
 
 
 class AircraftLease(Model):
@@ -88,3 +113,22 @@ class AircraftLease(Model):
     creditor = models.ForeignKey('core.Company', related_name='credited')
     debtor = models.ForeignKey('core.Company', related_name='debted')
     aircraft = models.ForeignKey('core.Aircraft')
+
+
+class Flight(Model):
+    flight_no = models.CharField(max_length=10)
+    company = models.ForeignKey('core.Company', related_name='flights')
+
+    departure_airport = models.ForeignKey('core.Airport', related_name='departing_flights')
+    departure_terminal = models.ForeignKey('core.Terminal', related_name='departing_flights')
+    departure_gate = models.ForeignKey('core.Gate', related_name='departing_flights')
+    arrival_airport = models.ForeignKey('core.Airport', related_name='arriving_flights')
+    arrival_terminal = models.ForeignKey('core.Terminal', related_name='arriving_flights')
+    arrival_gate = models.ForeignKey('core.Gate', related_name='arriving_flights')
+
+    start_time = models.DateTimeField()
+    duration = models.DurationField()
+    route_radars = models.ManyToManyField('core.Radar')
+    charter = models.BooleanField(default=False)
+    plane = models.ForeignKey('core.Aircraft')
+    crew = models.ManyToManyField('core.Crew')
