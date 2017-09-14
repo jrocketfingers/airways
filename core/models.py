@@ -45,14 +45,31 @@ class Crew(User):
     pass
 
 
+class Pilot(Crew):
+    pass
+
+
+class Stewardess(Crew):
+    pass
+
+
 class Company(Model):
     name = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name_plural = 'companies'
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Manufacturer(Model):
     name = models.CharField(max_length=50)
     country = models.CharField(max_length=2)  # ISO_3166-1_alpha-2
     city = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class AircraftMake(Model):
@@ -72,6 +89,9 @@ class AircraftMake(Model):
     speed = models.IntegerField()
     license_prefix = models.CharField(max_length=2)
 
+    def __str__(self):
+        return f'{self.manufacturer} {self.name}'
+
 
 class Aircraft(Model):
     """An aircraft.
@@ -82,23 +102,38 @@ class Aircraft(Model):
     make = models.ForeignKey('core.AircraftMake')
     company = models.ForeignKey('core.Company')
 
+    def __str__(self):
+        return f'{self.company} - {self.make}'
+
 
 class Airport(Model):
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Terminal(Model):
     name = models.CharField(max_length=100)
     airport = models.ForeignKey('core.Airport')
 
+    def __str__(self):
+        return f'{self.airport} - {self.name}'
+
 
 class Gate(Model):
     name = models.CharField(max_length=100)
     terminal = models.ForeignKey('core.Terminal')
 
+    def __str__(self):
+        return f'{self.terminal} - {self.name}'
+
 
 class Radar(Model):
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class AircraftLease(Model):
@@ -132,3 +167,33 @@ class Flight(Model):
     charter = models.BooleanField(default=False)
     plane = models.ForeignKey('core.Aircraft')
     crew = models.ManyToManyField('core.Crew')
+
+    def __str__(self):
+        return f'{self.flight_no} - {self.departure_airport} -> {self.arrival_airport}'
+
+
+class FlightUpdate(Model):
+    flight = models.ForeignKey('core.Flight', related_name='updates')
+    loc = models.ForeignKey('core.Radar')
+    FLIGHT_UPDATE_TAKE_OFF = 'TO'
+    FLIGHT_UPDATE_RADAR_CONTROL = 'RC'
+    FLIGHT_UPDATE_LANDING = 'LA'
+    FLIGHT_UPDATE_EMERGENCY_LANDING = 'EL'
+
+    FLIGHT_UPDATE_TYPES = (
+        (FLIGHT_UPDATE_TAKE_OFF, 'Take off'),
+        (FLIGHT_UPDATE_RADAR_CONTROL, 'Radar Control'),
+        (FLIGHT_UPDATE_LANDING, 'Landing'),
+        (FLIGHT_UPDATE_EMERGENCY_LANDING, 'Emergency Landing'),
+    )
+    type = models.CharField(max_length=2, choices=FLIGHT_UPDATE_TYPES)
+
+    average_speed = models.FloatField()
+    remaining_distance = models.FloatField()
+
+    @property
+    def estimated_time(self):
+        return self.average_speed / self.remaining_distance
+
+    def __str__(self):
+        return f'{self.flight} at {self.loc}'

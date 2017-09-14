@@ -1,3 +1,6 @@
 Django
 djangorestframework
+djangorestframework-jwt
+drf-nested-routers
 python-dateutil
+django-cors-headers

@@ -323,6 +323,13 @@ def import_initial_flights(apps, schema_editor):
         flight.route_radars.add(*radars)
         flight.crew.add(*crew)
 
+        # User = apps.get_model('core.User')
+        # User.objects.create_superuser(
+            # username='admin',
+            # password='admin',
+            # email='admin@rocketfinge.rs'
+        # )
+
 
 class Migration(migrations.Migration):
 
